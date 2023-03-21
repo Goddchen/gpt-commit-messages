@@ -16,16 +16,23 @@ void main(final List<String> arguments) async {
   );
 }
 
+const String optionCommit = 'commit';
 const String optionOpenAiApiKey = 'openai-api-key';
 const String optionNumMessages = 'num-messages';
 
 final ArgParser argParser = ArgParser()
+  ..addFlag(
+    optionCommit,
+    abbr: 'c',
+    defaultsTo: true,
+    help:
+        'Select message and create commit or just display message suggestions',
+  )
   ..addOption(
     optionNumMessages,
     abbr: 'n',
     defaultsTo: '3',
     help: 'Number of message suggestions to get from OpenAI',
-    defaultsTo: '0',
   )
   ..addOption(
     optionOpenAiApiKey,
@@ -37,6 +44,7 @@ final Logger logger = Logger(
   filter: ProductionFilter(),
   printer: MyPrinter(),
 );
+late bool commitAtEnd;
 late int numMessages;
 late String openAiApiKey;
 
@@ -145,8 +153,9 @@ TaskEither<Object, void> parseArguments(final Iterable<String> arguments) =>
     TaskEither<Object, void>.tryCatch(
       () async {
         final ArgResults args = argParser.parse(arguments);
-        openAiApiKey = args[optionOpenAiApiKey];
+        commitAtEnd = args[optionCommit];
         numMessages = int.parse(args[optionNumMessages]);
+        openAiApiKey = args[optionOpenAiApiKey];
       },
       (final Object error, final _) => '''
 $error
@@ -180,8 +189,14 @@ TaskEither<Object, void> run(final Iterable<String> arguments) =>
         .andThen(getGitDiff)
         .flatMap(getCommitMessages)
         .chainFirst(printCommitMessages)
-        .flatMap(selectCommitMessage)
-        .flatMap(commit)
+        .flatMap(
+          (final Iterable<String> commitMessages) => commitAtEnd
+              ? selectCommitMessage(commitMessages).flatMap(commit)
+              : TaskEither<Object, void>.tryCatch(
+                  () async {},
+                  (final Object error, final __) => error,
+                ),
+        )
         .orElse(
           (final Object error) => error is RefreshException
               ? run(arguments)
