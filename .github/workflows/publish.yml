@@ -25,4 +25,5 @@ jobs:
       - name: Publish release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: "build/gpt-commit-messages-${{ github.ref_name }}.exe"
+          artifacts: "gpt-commit-messages/build/gpt-commit-messages-${{ github.ref_name }}.exe"
+          omitBody: true
