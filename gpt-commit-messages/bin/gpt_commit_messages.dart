@@ -23,6 +23,7 @@ final ArgParser argParser = ArgParser()
   ..addOption(
     optionNumMessages,
     abbr: 'n',
+    defaultsTo: '3',
     help: 'Number of message suggestions to get from OpenAI',
     defaultsTo: '0',
   )
