@@ -46,7 +46,6 @@ TaskEither<Object, void> commit(
       () async {
         final ProcessResult result = await Process.run('git', <String>[
           'commit',
-          '-a',
           '-m',
           commitMessage,
         ]);
