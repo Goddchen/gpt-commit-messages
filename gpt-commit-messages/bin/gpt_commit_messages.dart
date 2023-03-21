@@ -17,8 +17,8 @@ void main(final List<String> arguments) async {
 }
 
 const String optionCommit = 'commit';
-const String optionOpenAiApiKey = 'openai-api-key';
 const String optionNumMessages = 'num-messages';
+const String optionOpenAiApiKey = 'openai-api-key';
 
 final ArgParser argParser = ArgParser()
   ..addFlag(
