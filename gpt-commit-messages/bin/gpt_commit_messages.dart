@@ -165,6 +165,7 @@ TaskEither<Object, void> parseArguments(final Iterable<String> arguments) =>
         commitAtEnd = args[optionCommit];
         numMessages = int.parse(args[optionNumMessages]);
         openAiApiKey = args[optionOpenAiApiKey];
+        signOff = args[optionSignOffCommit];
       },
       (final Object error, final _) => '''
 $error
