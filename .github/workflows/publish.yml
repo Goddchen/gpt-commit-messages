@@ -1,0 +1,24 @@
+name: publish workflow
+on:
+  push:
+    tags:
+      - "*"
+defaults:
+  run:
+    working-directory: gpt-commit-messages/
+jobs:
+  publish-windows-binary:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1.3
+        with:
+          sdk: 2.19.2
+      - name: Compile binary
+        run: |
+          mkdir build/
+          dart compile exe ./bin/gpt_commit_messages.dart -o "build/gpt-commit-messages-${{ github.ref_name }}.exe"
+      - name: Publish release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "build/gpt-commit-messages-${{ github.ref_name }}.exe"

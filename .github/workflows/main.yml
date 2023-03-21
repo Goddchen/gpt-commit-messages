@@ -1,0 +1,26 @@
+name: main workflow
+on:
+  push:
+    branches:
+      - main
+defaults:
+  run:
+    working-directory: gpt-commit-messages/
+jobs:
+  analyze:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1.3
+        with:
+          sdk: 2.19.2
+      - run: dart pub get
+      - run: dart analyze --fatal-infos --fatal-warnings
+  format:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1.3
+        with:
+          sdk: 2.19.2
+      - run: dart format --output none --set-exit-if-changed .\example\ .\lib\ .\test\ .\bin\
