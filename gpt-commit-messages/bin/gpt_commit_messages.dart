@@ -19,6 +19,7 @@ void main(final List<String> arguments) async {
 const String optionCommit = 'commit';
 const String optionNumMessages = 'num-messages';
 const String optionOpenAiApiKey = 'openai-api-key';
+const String optionSignOffCommit = 'sign-off';
 
 final ArgParser argParser = ArgParser()
   ..addFlag(
@@ -39,6 +40,12 @@ final ArgParser argParser = ArgParser()
     abbr: 'a',
     mandatory: true,
     help: 'Get yours at https://platform.openai.com/account/api-keys',
+  )
+  ..addFlag(
+    optionSignOffCommit,
+    abbr: 's',
+    defaultsTo: false,
+    help: 'Sign-off commits',
   );
 final Logger logger = Logger(
   filter: ProductionFilter(),
@@ -47,6 +54,7 @@ final Logger logger = Logger(
 late bool commitAtEnd;
 late int numMessages;
 late String openAiApiKey;
+late bool signOff;
 
 TaskEither<Object, void> commit(
   final String commitMessage,
@@ -55,6 +63,7 @@ TaskEither<Object, void> commit(
       () async {
         final ProcessResult result = await Process.run('git', <String>[
           'commit',
+          if (signOff) '-s',
           '-m',
           commitMessage,
         ]);
