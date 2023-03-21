@@ -17,7 +17,15 @@ void main(final List<String> arguments) async {
 }
 
 const String optionOpenAiApiKey = 'openai-api-key';
+const String optionNumMessages = 'num-messages';
+
 final ArgParser argParser = ArgParser()
+  ..addOption(
+    optionNumMessages,
+    abbr: 'n',
+    help: 'Number of message suggestions to get from OpenAI',
+    defaultsTo: '0',
+  )
   ..addOption(
     optionOpenAiApiKey,
     abbr: 'a',
@@ -28,6 +36,7 @@ final Logger logger = Logger(
   filter: ProductionFilter(),
   printer: MyPrinter(),
 );
+late int numMessages;
 late String openAiApiKey;
 
 TaskEither<Object, void> commit(
@@ -83,7 +92,7 @@ TaskEither<Object, Iterable<String>> getCommitMessages(
               },
             ],
             'model': 'gpt-3.5-turbo',
-            'n': 3,
+            'n': numMessages,
           }),
           headers: <String, String>{
             HttpHeaders.authorizationHeader: 'Bearer $openAiApiKey',
@@ -137,6 +146,7 @@ TaskEither<Object, void> parseArguments(final Iterable<String> arguments) =>
       () async {
         final ArgResults args = argParser.parse(arguments);
         openAiApiKey = args[optionOpenAiApiKey];
+        numMessages = int.parse(args[optionNumMessages]);
       },
       (final Object error, final _) => '''
 $error
