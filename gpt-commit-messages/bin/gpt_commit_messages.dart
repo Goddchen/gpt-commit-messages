@@ -20,6 +20,7 @@ void main(final List<String> arguments) async {
 }
 
 const String optionCommit = 'commit';
+const String optionDisplaimer = 'disclaimer';
 const String optionNumMessages = 'num-messages';
 const String optionOpenAiApiKey = 'openai-api-key';
 const String optionSignOffCommit = 'sign-off';
@@ -31,6 +32,12 @@ final ArgParser argParser = ArgParser()
     defaultsTo: true,
     help:
         'Select message and create commit or just display message suggestions',
+  )
+  ..addFlag(
+    optionDisplaimer,
+    abbr: 'd',
+    defaultsTo: true,
+    help: 'Append disclaimer at the end of the commit message',
   )
   ..addOption(
     optionNumMessages,
@@ -65,7 +72,10 @@ TaskEither<Object, void> commit(
           'commit',
           if (arguments.signOff) '-s',
           '-m',
-          commitMessage,
+          if (arguments.disclaimer)
+            '$commitMessage\n\nDisclaimer: This message has been generated with gpt-commit-messages: https://github.com/Goddchen/gpt-commit-messages'
+          else
+            commitMessage,
         ]);
         if (result.exitCode != 0) {
           logger.e(
@@ -166,6 +176,7 @@ TaskEither<Object, void> parseArguments(
         final ArgResults args = argParser.parse(commandLineArguments);
         arguments = Arguments(
           commitAtEnd: args[optionCommit],
+          disclaimer: args[optionDisplaimer],
           numMessages: int.parse(args[optionNumMessages]),
           openAiApiKey: args[optionOpenAiApiKey],
           signOff: args[optionSignOffCommit],
@@ -242,6 +253,7 @@ TaskEither<Object, String> selectCommitMessage(
 class Arguments with _$Arguments {
   const factory Arguments({
     required final bool commitAtEnd,
+    required final bool disclaimer,
     required final int numMessages,
     required final String openAiApiKey,
     required final bool signOff,
