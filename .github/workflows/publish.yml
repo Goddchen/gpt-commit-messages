@@ -21,12 +21,58 @@ jobs:
       - name: Pub get
         run: dart pub get
       - name: Compile binary
-        run: dart compile exe ./bin/gpt_commit_messages.dart -o "build/gpt-commit-messages-${{ github.ref_name }}.exe"
+        run: dart compile exe ./bin/gpt_commit_messages.dart -o "build/gpt-commit-messages-windows-${{ github.ref_name }}.exe"
       - name: Publish release
         uses: ncipollo/release-action@v1
         with:
           allowUpdates: true
-          artifacts: "gpt-commit-messages/build/gpt-commit-messages-${{ github.ref_name }}.exe"
+          artifacts: "gpt-commit-messages/build/gpt-commit-messages-windows-${{ github.ref_name }}.exe"
           artifactErrorsFailBuild: true
           bodyFile: gpt-commit-messages/CHANGELOG.md
-          latest: true
+          makeLatest: true
+  publish-macos-binary:
+    runs-on: macos-12
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1.3
+        with:
+          sdk: 2.19.2
+      - name: Create build/ folder
+        run: mkdir build/
+      - name: Pub get
+        run: dart pub get
+      - name: Compile binary
+        run: dart compile exe ./bin/gpt_commit_messages.dart -o "build/gpt-commit-messages-macos-${{ github.ref_name }}"
+      - name: Publish release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifacts: "gpt-commit-messages/build/gpt-commit-messages-macos-${{ github.ref_name }}"
+          artifactErrorsFailBuild: true
+          bodyFile: gpt-commit-messages/CHANGELOG.md
+          makeLatest: true
+  publish-linux-binary:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1.3
+        with:
+          sdk: 2.19.2
+      - name: Create build/ folder
+        run: mkdir build/
+      - name: Pub get
+        run: dart pub get
+      - name: Compile binary
+        run: dart compile exe ./bin/gpt_commit_messages.dart -o "build/gpt-commit-messages-linux-${{ github.ref_name }}"
+      - name: Publish release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifacts: "gpt-commit-messages/build/gpt-commit-messages-linux-${{ github.ref_name }}"
+          artifactErrorsFailBuild: true
+          bodyFile: gpt-commit-messages/CHANGELOG.md
+          makeLatest: true
