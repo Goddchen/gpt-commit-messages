@@ -238,15 +238,6 @@ TaskEither<Object, String> selectCommitMessage(
       (final Object error, final _) => error,
     );
 
-class MyPrinter extends LogPrinter {
-  @override
-  List<String> log(final LogEvent event) => <String>[
-        '${event.message}${event.error != null ? ': ${event.error}' : ''}',
-      ];
-}
-
-class RefreshException implements Exception {}
-
 @freezed
 class Arguments with _$Arguments {
   const factory Arguments({
@@ -256,3 +247,12 @@ class Arguments with _$Arguments {
     required final bool signOff,
   }) = _Arguments;
 }
+
+class MyPrinter extends LogPrinter {
+  @override
+  List<String> log(final LogEvent event) => <String>[
+        '${event.message}${event.error != null ? ': ${event.error}' : ''}',
+      ];
+}
+
+class RefreshException implements Exception {}
