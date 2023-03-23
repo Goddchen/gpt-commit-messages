@@ -28,4 +28,5 @@ jobs:
           allowUpdates: true
           artifacts: "gpt-commit-messages/build/gpt-commit-messages-${{ github.ref_name }}.exe"
           artifactErrorsFailBuild: true
-          omitBody: true
+          bodyFile: gpt-commit-messages/CHANGELOG.md
+          latest: true
