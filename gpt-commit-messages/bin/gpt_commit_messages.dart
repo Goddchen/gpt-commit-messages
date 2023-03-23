@@ -3,8 +3,11 @@ import 'dart:io';
 
 import 'package:args/args.dart' hide Option;
 import 'package:fpdart/fpdart.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
+
+part 'gpt_commit_messages.freezed.dart';
 
 void main(final List<String> arguments) async {
   (await run(arguments).run()).fold(
@@ -47,14 +50,11 @@ final ArgParser argParser = ArgParser()
     defaultsTo: false,
     help: 'Sign-off commits',
   );
+late Arguments arguments;
 final Logger logger = Logger(
   filter: ProductionFilter(),
   printer: MyPrinter(),
 );
-late bool commitAtEnd;
-late int numMessages;
-late String openAiApiKey;
-late bool signOff;
 
 TaskEither<Object, void> commit(
   final String commitMessage,
@@ -63,7 +63,7 @@ TaskEither<Object, void> commit(
       () async {
         final ProcessResult result = await Process.run('git', <String>[
           'commit',
-          if (signOff) '-s',
+          if (arguments.signOff) '-s',
           '-m',
           commitMessage,
         ]);
@@ -109,10 +109,10 @@ TaskEither<Object, Iterable<String>> getCommitMessages(
               },
             ],
             'model': 'gpt-3.5-turbo',
-            'n': numMessages,
+            'n': arguments.numMessages,
           }),
           headers: <String, String>{
-            HttpHeaders.authorizationHeader: 'Bearer $openAiApiKey',
+            HttpHeaders.authorizationHeader: 'Bearer ${arguments.openAiApiKey}',
             HttpHeaders.contentTypeHeader: ContentType.json.mimeType,
           },
         );
@@ -158,14 +158,18 @@ TaskEither<Object, String> getGitDiff() => TaskEither<Object, String>.tryCatch(
       (final Object error, final _) => error,
     );
 
-TaskEither<Object, void> parseArguments(final Iterable<String> arguments) =>
+TaskEither<Object, void> parseArguments(
+  final Iterable<String> commandLineArguments,
+) =>
     TaskEither<Object, void>.tryCatch(
       () async {
-        final ArgResults args = argParser.parse(arguments);
-        commitAtEnd = args[optionCommit];
-        numMessages = int.parse(args[optionNumMessages]);
-        openAiApiKey = args[optionOpenAiApiKey];
-        signOff = args[optionSignOffCommit];
+        final ArgResults args = argParser.parse(commandLineArguments);
+        arguments = Arguments(
+          commitAtEnd: args[optionCommit],
+          numMessages: int.parse(args[optionNumMessages]),
+          openAiApiKey: args[optionOpenAiApiKey],
+          signOff: args[optionSignOffCommit],
+        );
       },
       (final Object error, final _) => '''
 $error
@@ -193,14 +197,14 @@ TaskEither<Object, void> printCommitMessages(
       (final Object error, final _) => error,
     );
 
-TaskEither<Object, void> run(final Iterable<String> arguments) =>
-    parseArguments(arguments)
+TaskEither<Object, void> run(final Iterable<String> commandLineArguments) =>
+    parseArguments(commandLineArguments)
         .andThen(ensureGit)
         .andThen(getGitDiff)
         .flatMap(getCommitMessages)
         .chainFirst(printCommitMessages)
         .flatMap(
-          (final Iterable<String> commitMessages) => commitAtEnd
+          (final Iterable<String> commitMessages) => arguments.commitAtEnd
               ? selectCommitMessage(commitMessages).flatMap(commit)
               : TaskEither<Object, void>.tryCatch(
                   () async {},
@@ -209,7 +213,7 @@ TaskEither<Object, void> run(final Iterable<String> arguments) =>
         )
         .orElse(
           (final Object error) => error is RefreshException
-              ? run(arguments)
+              ? run(commandLineArguments)
               : TaskEither<Object, void>.left(error),
         );
 
@@ -242,3 +246,13 @@ class MyPrinter extends LogPrinter {
 }
 
 class RefreshException implements Exception {}
+
+@freezed
+class Arguments with _$Arguments {
+  const factory Arguments({
+    required final bool commitAtEnd,
+    required final int numMessages,
+    required final String openAiApiKey,
+    required final bool signOff,
+  }) = _Arguments;
+}
