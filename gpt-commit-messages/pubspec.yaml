@@ -1,4 +1,4 @@
-description: Let ChatGPT suggest commit messages.
+description: Let ChatGPT suggest commit messages. Comes with a lot of options to customize to your needs.
 name: gpt_commit_messages
 repository: https://github.com/Goddchen/gpt-commit-messages
 version: 0.2.0
