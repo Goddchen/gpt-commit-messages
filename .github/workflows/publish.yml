@@ -76,3 +76,17 @@ jobs:
           artifactErrorsFailBuild: true
           bodyFile: gpt-commit-messages/CHANGELOG.md
           makeLatest: true
+  publish-pub-dev:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: dart-lang/setup-dart@v1.3
+        with:
+          sdk: 2.19.2
+      - name: Setup credentials
+        env:
+          PUB_DEV_CREDENTIALS: ${{ secrets.PUB_DEV_CREDENTIALS }}
+        run: |
+          mkdir -p ~/.config/dart
+          echo $PUB_DEV_CREDENTIALS > ~/.config/dart/pub-credentials.json
+      - run: dart pub publish -f
