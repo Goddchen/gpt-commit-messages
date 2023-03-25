@@ -33,3 +33,10 @@ dart run bin/gpt_commit_messages.dart
 ```bash
 dart compile exe .\bin\gpt_commit_messages.dart -o build/gpt-commit-messages.exe
 ```
+
+### Install on PATH
+
+```bash
+dart pub global activate gpt_commit_messages
+gpt-commit-messages --help
+```
