@@ -1,10 +1,9 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart' hide Option;
+import 'package:dart_openai/openai.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 
 part 'gpt_commit_messages.freezed.dart';
@@ -106,47 +105,27 @@ TaskEither<Object, Iterable<String>> getCommitMessages(
   final int numSkippedLines = 0,
 ]) =>
     TaskEither<Object, Iterable<String>>.tryCatch(
-      () async {
-        final http.Response response = await http.post(
-          Uri.parse('https://api.openai.com/v1/chat/completions'),
-          body: jsonEncode(<String, Object>{
-            'max_tokens': 512,
-            'messages': <Map<String, Object>>[
-              <String, Object>{
-                'content':
-                    'Generate a conventional commit message with a short body for this git diff:\n\n${gitDiff.split('\n').reversed.skip(numSkippedLines).toList().reversed.join('\n')}',
-                'role': 'user',
-              },
-            ],
-            'model': 'gpt-3.5-turbo',
-            'n': arguments.numMessages,
-          }),
-          headers: <String, String>{
-            HttpHeaders.authorizationHeader: 'Bearer ${arguments.openAiApiKey}',
-            HttpHeaders.contentTypeHeader: ContentType.json.mimeType,
-          },
-        );
-        if (response.statusCode != 200) {
-          throw Exception(
-            'Error getting commit messages. HTTP status: ${response.statusCode} - ${response.body}',
-          );
-        }
-        // ignore: avoid_annotating_with_dynamic, avoid_dynamic_calls
-        final List<dynamic> messages = jsonDecode(response.body)['choices'];
-        return messages
-            .filter(
-              // ignore: avoid_annotating_with_dynamic
-              (final dynamic message) =>
-                  // ignore: avoid_dynamic_calls
-                  message['finish_reason'] == 'stop',
-            )
-            .map(
-              // ignore: avoid_annotating_with_dynamic
-              (final dynamic message) =>
-                  // ignore: avoid_dynamic_calls
-                  (message['message']['content'] as String).trim(),
-            );
-      },
+      () async => (await OpenAI.instance.chat.create(
+        maxTokens: 512,
+        messages: <OpenAIChatCompletionChoiceMessageModel>[
+          OpenAIChatCompletionChoiceMessageModel(
+            role: OpenAIChatMessageRole.user,
+            content:
+                'Generate a conventional commit message with a short body for this git diff:\n\n${gitDiff.split('\n').reversed.skip(numSkippedLines).toList().reversed.join('\n')}',
+          ),
+        ],
+        model: 'gpt-3.5-turbo',
+        n: arguments.numMessages,
+      ))
+          .choices
+          .filter(
+            (final OpenAIChatCompletionChoiceModel choice) =>
+                choice.finishReason == 'stop',
+          )
+          .map(
+            (final OpenAIChatCompletionChoiceModel choice) =>
+                choice.message.content,
+          ),
       (final Object error, final _) => error,
     ).alt(
       () => numSkippedLines >= gitDiff.split('\n').length
@@ -181,6 +160,7 @@ TaskEither<Object, void> parseArguments(
           openAiApiKey: args[optionOpenAiApiKey],
           signOff: args[optionSignOffCommit],
         );
+        OpenAI.apiKey = arguments.openAiApiKey;
       },
       (final Object error, final _) => '''
 $error
@@ -266,5 +246,62 @@ class MyPrinter extends LogPrinter {
         '${event.message}${event.error != null ? ': ${event.error}' : ''}',
       ];
 }
+
+// @freezed
+// class OpenAiApiRequest with _$OpenAiApiRequest {
+//   const factory OpenAiApiRequest({
+//     required final int maxTokens,
+//     required final Iterable<OpenAiApiRequestMessage> messages,
+//     required final String model,
+//     required final int numMessages,
+//   }) = _OpenAiApiRequest;
+
+//   factory OpenAiApiRequest.fromJson(final Map<String, dynamic> json) =>
+//       _$OpenAiApiRequestFromJson(json);
+// }
+
+// @freezed
+// class OpenAiApiRequestMessage with _$OpenAiApiRequestMessage {
+//   const factory OpenAiApiRequestMessage({
+//     required final String content,
+//     required final String role,
+//   }) = _OpenAiApiRequestMessage;
+
+//   factory OpenAiApiRequestMessage.fromJson(final Map<String, dynamic> json) =>
+//       _$OpenAiApiRequestMessageFromJson(json);
+// }
+
+// @freezed
+// class OpenAiApiResponse with _$OpenAiApiResponse {
+//   const factory OpenAiApiResponse({
+//     required final Iterable<OpenAiApiResponseChoice> choices,
+//   }) = _OpenAiApiResponse;
+
+//   factory OpenAiApiResponse.fromJson(final Map<String, dynamic> json) =>
+//       _$OpenAiApiResponseFromJson(json);
+// }
+
+// @freezed
+// class OpenAiApiResponseChoice with _$OpenAiApiResponseChoice {
+//   const factory OpenAiApiResponseChoice({
+//     required final String finishReason,
+//     required final OpenAiApiResponseChoiceMessage message,
+//   }) = _OpenAiApiResponseChoice;
+
+//   factory OpenAiApiResponseChoice.fromJson(final Map<String, dynamic> json) =>
+//       _$OpenAiApiResponseChoiceFromJson(json);
+// }
+
+// @freezed
+// class OpenAiApiResponseChoiceMessage with _$OpenAiApiResponseChoiceMessage {
+//   const factory OpenAiApiResponseChoiceMessage({
+//     required final String content,
+//   }) = _OpenAiApiResponseChoiceMessage;
+
+//   factory OpenAiApiResponseChoiceMessage.fromJson(
+//     final Map<String, dynamic> json,
+//   ) =>
+//       _$OpenAiApiResponseChoiceMessageFromJson(json);
+// }
 
 class RefreshException implements Exception {}
