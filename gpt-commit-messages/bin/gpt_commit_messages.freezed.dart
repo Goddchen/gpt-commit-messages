@@ -18,6 +18,7 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$Arguments {
   bool get commitAtEnd => throw _privateConstructorUsedError;
   bool get disclaimer => throw _privateConstructorUsedError;
+  bool get includeGeneratedCode => throw _privateConstructorUsedError;
   int get numMessages => throw _privateConstructorUsedError;
   String get openAiApiKey => throw _privateConstructorUsedError;
   bool get signOff => throw _privateConstructorUsedError;
@@ -35,6 +36,7 @@ abstract class $ArgumentsCopyWith<$Res> {
   $Res call(
       {bool commitAtEnd,
       bool disclaimer,
+      bool includeGeneratedCode,
       int numMessages,
       String openAiApiKey,
       bool signOff});
@@ -55,6 +57,7 @@ class _$ArgumentsCopyWithImpl<$Res, $Val extends Arguments>
   $Res call({
     Object? commitAtEnd = null,
     Object? disclaimer = null,
+    Object? includeGeneratedCode = null,
     Object? numMessages = null,
     Object? openAiApiKey = null,
     Object? signOff = null,
@@ -67,6 +70,10 @@ class _$ArgumentsCopyWithImpl<$Res, $Val extends Arguments>
       disclaimer: null == disclaimer
           ? _value.disclaimer
           : disclaimer // ignore: cast_nullable_to_non_nullable
+              as bool,
+      includeGeneratedCode: null == includeGeneratedCode
+          ? _value.includeGeneratedCode
+          : includeGeneratedCode // ignore: cast_nullable_to_non_nullable
               as bool,
       numMessages: null == numMessages
           ? _value.numMessages
@@ -94,6 +101,7 @@ abstract class _$$_ArgumentsCopyWith<$Res> implements $ArgumentsCopyWith<$Res> {
   $Res call(
       {bool commitAtEnd,
       bool disclaimer,
+      bool includeGeneratedCode,
       int numMessages,
       String openAiApiKey,
       bool signOff});
@@ -112,6 +120,7 @@ class __$$_ArgumentsCopyWithImpl<$Res>
   $Res call({
     Object? commitAtEnd = null,
     Object? disclaimer = null,
+    Object? includeGeneratedCode = null,
     Object? numMessages = null,
     Object? openAiApiKey = null,
     Object? signOff = null,
@@ -124,6 +133,10 @@ class __$$_ArgumentsCopyWithImpl<$Res>
       disclaimer: null == disclaimer
           ? _value.disclaimer
           : disclaimer // ignore: cast_nullable_to_non_nullable
+              as bool,
+      includeGeneratedCode: null == includeGeneratedCode
+          ? _value.includeGeneratedCode
+          : includeGeneratedCode // ignore: cast_nullable_to_non_nullable
               as bool,
       numMessages: null == numMessages
           ? _value.numMessages
@@ -147,6 +160,7 @@ class _$_Arguments implements _Arguments {
   const _$_Arguments(
       {required this.commitAtEnd,
       required this.disclaimer,
+      required this.includeGeneratedCode,
       required this.numMessages,
       required this.openAiApiKey,
       required this.signOff});
@@ -156,6 +170,8 @@ class _$_Arguments implements _Arguments {
   @override
   final bool disclaimer;
   @override
+  final bool includeGeneratedCode;
+  @override
   final int numMessages;
   @override
   final String openAiApiKey;
@@ -164,7 +180,7 @@ class _$_Arguments implements _Arguments {
 
   @override
   String toString() {
-    return 'Arguments(commitAtEnd: $commitAtEnd, disclaimer: $disclaimer, numMessages: $numMessages, openAiApiKey: $openAiApiKey, signOff: $signOff)';
+    return 'Arguments(commitAtEnd: $commitAtEnd, disclaimer: $disclaimer, includeGeneratedCode: $includeGeneratedCode, numMessages: $numMessages, openAiApiKey: $openAiApiKey, signOff: $signOff)';
   }
 
   @override
@@ -176,6 +192,8 @@ class _$_Arguments implements _Arguments {
                 other.commitAtEnd == commitAtEnd) &&
             (identical(other.disclaimer, disclaimer) ||
                 other.disclaimer == disclaimer) &&
+            (identical(other.includeGeneratedCode, includeGeneratedCode) ||
+                other.includeGeneratedCode == includeGeneratedCode) &&
             (identical(other.numMessages, numMessages) ||
                 other.numMessages == numMessages) &&
             (identical(other.openAiApiKey, openAiApiKey) ||
@@ -184,8 +202,8 @@ class _$_Arguments implements _Arguments {
   }
 
   @override
-  int get hashCode => Object.hash(
-      runtimeType, commitAtEnd, disclaimer, numMessages, openAiApiKey, signOff);
+  int get hashCode => Object.hash(runtimeType, commitAtEnd, disclaimer,
+      includeGeneratedCode, numMessages, openAiApiKey, signOff);
 
   @JsonKey(ignore: true)
   @override
@@ -198,6 +216,7 @@ abstract class _Arguments implements Arguments {
   const factory _Arguments(
       {required final bool commitAtEnd,
       required final bool disclaimer,
+      required final bool includeGeneratedCode,
       required final int numMessages,
       required final String openAiApiKey,
       required final bool signOff}) = _$_Arguments;
@@ -206,6 +225,8 @@ abstract class _Arguments implements Arguments {
   bool get commitAtEnd;
   @override
   bool get disclaimer;
+  @override
+  bool get includeGeneratedCode;
   @override
   int get numMessages;
   @override

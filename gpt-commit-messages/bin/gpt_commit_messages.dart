@@ -20,6 +20,7 @@ void main(final List<String> arguments) async {
 
 const String optionCommit = 'commit';
 const String optionDisplaimer = 'disclaimer';
+const String optionGeneratedCode = 'generated-code';
 const String optionNumMessages = 'num-messages';
 const String optionOpenAiApiKey = 'openai-api-key';
 const String optionSignOffCommit = 'sign-off';
@@ -37,6 +38,12 @@ final ArgParser argParser = ArgParser()
     abbr: 'd',
     defaultsTo: true,
     help: 'Append disclaimer at the end of the commit message',
+  )
+  ..addFlag(
+    optionGeneratedCode,
+    abbr: 'g',
+    defaultsTo: false,
+    help: 'Include generated files',
   )
   ..addOption(
     optionNumMessages,
@@ -137,8 +144,16 @@ TaskEither<Object, Iterable<String>> getCommitMessages(
 
 TaskEither<Object, String> getGitDiff() => TaskEither<Object, String>.tryCatch(
       () async {
-        final ProcessResult result =
-            await Process.run('git', <String>['diff', '--cached']);
+        final ProcessResult result = await Process.run('git', <String>[
+          'diff',
+          '--cached',
+          if (!arguments.includeGeneratedCode) ...<String>[
+            '--',
+            ':!**/*.mocks.dart',
+            ':!**/*.g.dart',
+            ':!**/*.freezed.dart',
+          ],
+        ]);
         if (result.exitCode != 0 || (result.stdout as String).isEmpty) {
           throw Exception('Error getting git diff');
         }
@@ -156,6 +171,7 @@ TaskEither<Object, void> parseArguments(
         arguments = Arguments(
           commitAtEnd: args[optionCommit],
           disclaimer: args[optionDisplaimer],
+          includeGeneratedCode: args[optionGeneratedCode],
           numMessages: int.parse(args[optionNumMessages]),
           openAiApiKey: args[optionOpenAiApiKey],
           signOff: args[optionSignOffCommit],
@@ -234,6 +250,7 @@ class Arguments with _$Arguments {
   const factory Arguments({
     required final bool commitAtEnd,
     required final bool disclaimer,
+    required final bool includeGeneratedCode,
     required final int numMessages,
     required final String openAiApiKey,
     required final bool signOff,
