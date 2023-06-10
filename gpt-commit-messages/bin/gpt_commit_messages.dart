@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:args/args.dart' hide Option;
-import 'package:dart_openai/openai.dart';
+import 'package:dart_openai/dart_openai.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:logger/logger.dart';
