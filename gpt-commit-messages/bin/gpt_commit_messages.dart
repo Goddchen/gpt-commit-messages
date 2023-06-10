@@ -134,13 +134,23 @@ TaskEither<Object, Iterable<String>> getCommitMessages(
                 choice.message.content,
           ),
       (final Object error, final _) => error,
-    ).alt(
-      () => numSkippedLines >= gitDiff.split('\n').length
-          ? TaskEither<Object, Iterable<String>>.left(
-              Exception('Too many lines to skip'),
-            )
-          : getCommitMessages(gitDiff, numSkippedLines + 10),
-    );
+    ).orElse((final Object error) {
+      if (error is RequestFailedException && error.statusCode == 429) {
+        return TaskEither<Object, Iterable<String>>.left(
+          Exception('You exceeded your API quota'),
+        );
+      } else {
+        final int numberOfLines = gitDiff.split('\n').length;
+        return numSkippedLines >= numberOfLines
+            ? TaskEither<Object, Iterable<String>>.left(
+                Exception('Too many lines to skip'),
+              )
+            : getCommitMessages(
+                gitDiff,
+                (numSkippedLines + (numberOfLines * 0.1)).toInt(),
+              );
+      }
+    });
 
 TaskEither<Object, String> getGitDiff() => TaskEither<Object, String>.tryCatch(
       () async {
