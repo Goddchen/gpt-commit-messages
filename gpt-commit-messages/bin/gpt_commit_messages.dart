@@ -8,13 +8,13 @@ import 'package:logger/logger.dart';
 
 part 'gpt_commit_messages.freezed.dart';
 
-void main(final List<String> arguments) async {
+void main(List<String> arguments) async {
   (await run(arguments).run()).fold(
-    (final Object error) => logger.e(
+    (error) => logger.e(
       'Error',
       error,
     ),
-    (final _) {},
+    (_) {},
   );
 }
 
@@ -42,7 +42,6 @@ final ArgParser argParser = ArgParser()
   ..addFlag(
     optionGeneratedCode,
     abbr: 'g',
-    defaultsTo: false,
     help: 'Include generated files',
   )
   ..addOption(
@@ -60,7 +59,6 @@ final ArgParser argParser = ArgParser()
   ..addFlag(
     optionSignOffCommit,
     abbr: 's',
-    defaultsTo: false,
     help: 'Sign-off commits',
   );
 late Arguments arguments;
@@ -70,11 +68,11 @@ final Logger logger = Logger(
 );
 
 TaskEither<Object, void> commit(
-  final String commitMessage,
+  String commitMessage,
 ) =>
     TaskEither<Object, void>.tryCatch(
       () async {
-        final ProcessResult result = await Process.run('git', <String>[
+        final result = await Process.run('git', <String>[
           'commit',
           if (arguments.signOff) '-s',
           '-m',
@@ -90,12 +88,12 @@ TaskEither<Object, void> commit(
           );
         }
       },
-      (final Object error, final _) => error,
+      (error, _) => error,
     );
 
 TaskEither<Object, void> ensureGit() => TaskEither<Object, void>.tryCatch(
       () async {
-        final ProcessResult result = await Process.run(
+        final result = await Process.run(
           'git',
           <String>['--version'],
         );
@@ -104,12 +102,12 @@ TaskEither<Object, void> ensureGit() => TaskEither<Object, void>.tryCatch(
           exit(1);
         }
       },
-      (final Object error, final _) => error,
+      (error, _) => error,
     );
 
 TaskEither<Object, Iterable<String>> getCommitMessages(
-  final String gitDiff, [
-  final int numSkippedLines = 0,
+  String gitDiff, [
+  int numSkippedLines = 0,
 ]) =>
     TaskEither<Object, Iterable<String>>.tryCatch(
       () async => (await OpenAI.instance.chat.create(
@@ -118,6 +116,7 @@ TaskEither<Object, Iterable<String>> getCommitMessages(
           OpenAIChatCompletionChoiceMessageModel(
             role: OpenAIChatMessageRole.user,
             content:
+                // ignore: lines_longer_than_80_chars
                 'Generate a conventional commit message with a short body for this git diff:\n\n${gitDiff.split('\n').reversed.skip(numSkippedLines).toList().reversed.join('\n')}',
           ),
         ],
@@ -126,21 +125,19 @@ TaskEither<Object, Iterable<String>> getCommitMessages(
       ))
           .choices
           .filter(
-            (final OpenAIChatCompletionChoiceModel choice) =>
-                choice.finishReason == 'stop',
+            (choice) => choice.finishReason == 'stop',
           )
           .map(
-            (final OpenAIChatCompletionChoiceModel choice) =>
-                choice.message.content,
+            (choice) => choice.message.content,
           ),
-      (final Object error, final _) => error,
-    ).orElse((final Object error) {
+      (error, _) => error,
+    ).orElse((error) {
       if (error is RequestFailedException && error.statusCode == 429) {
         return TaskEither<Object, Iterable<String>>.left(
           Exception('You exceeded your API quota'),
         );
       } else {
-        final int numberOfLines = gitDiff.split('\n').length;
+        final numberOfLines = gitDiff.split('\n').length;
         return numSkippedLines >= numberOfLines
             ? TaskEither<Object, Iterable<String>>.left(
                 Exception('Too many lines to skip'),
@@ -154,7 +151,7 @@ TaskEither<Object, Iterable<String>> getCommitMessages(
 
 TaskEither<Object, String> getGitDiff() => TaskEither<Object, String>.tryCatch(
       () async {
-        final ProcessResult result = await Process.run('git', <String>[
+        final result = await Process.run('git', <String>[
           'diff',
           '--cached',
           if (!arguments.includeGeneratedCode) ...<String>[
@@ -169,26 +166,26 @@ TaskEither<Object, String> getGitDiff() => TaskEither<Object, String>.tryCatch(
         }
         return result.stdout as String;
       },
-      (final Object error, final _) => error,
+      (error, _) => error,
     );
 
 TaskEither<Object, void> parseArguments(
-  final Iterable<String> commandLineArguments,
+  Iterable<String> commandLineArguments,
 ) =>
     TaskEither<Object, void>.tryCatch(
       () async {
-        final ArgResults args = argParser.parse(commandLineArguments);
+        final args = argParser.parse(commandLineArguments);
         arguments = Arguments(
-          commitAtEnd: args[optionCommit],
-          disclaimer: args[optionDisplaimer],
-          includeGeneratedCode: args[optionGeneratedCode],
-          numMessages: int.parse(args[optionNumMessages]),
-          openAiApiKey: args[optionOpenAiApiKey],
-          signOff: args[optionSignOffCommit],
+          commitAtEnd: args[optionCommit] as bool,
+          disclaimer: args[optionDisplaimer] as bool,
+          includeGeneratedCode: args[optionGeneratedCode] as bool,
+          numMessages: int.parse(args[optionNumMessages] as String),
+          openAiApiKey: args[optionOpenAiApiKey] as String,
+          signOff: args[optionSignOffCommit] as bool,
         );
         OpenAI.apiKey = arguments.openAiApiKey;
       },
-      (final Object error, final _) => '''
+      (error, _) => '''
 $error
 
 Usage: gpt-commit-messages [options]
@@ -199,51 +196,51 @@ ${argParser.usage}
     );
 
 TaskEither<Object, void> printCommitMessages(
-  final Iterable<String> commitMessages,
+  Iterable<String> commitMessages,
 ) =>
     TaskEither<Object, void>.tryCatch(
       () async => commitMessages
           .mapWithIndex(
             (
-              final String message,
-              final int index,
+              message,
+              index,
             ) =>
                 '[$index] $message',
           )
           .forEach(logger.i),
-      (final Object error, final _) => error,
+      (error, _) => error,
     );
 
-TaskEither<Object, void> run(final Iterable<String> commandLineArguments) =>
+TaskEither<Object, void> run(Iterable<String> commandLineArguments) =>
     parseArguments(commandLineArguments)
         .andThen(ensureGit)
         .andThen(getGitDiff)
         .flatMap(getCommitMessages)
         .chainFirst(printCommitMessages)
         .flatMap(
-          (final Iterable<String> commitMessages) => arguments.commitAtEnd
+          (commitMessages) => arguments.commitAtEnd
               ? selectCommitMessage(commitMessages).flatMap(commit)
               : TaskEither<Object, void>.tryCatch(
                   () async {},
-                  (final Object error, final __) => error,
+                  (error, __) => error,
                 ),
         )
         .orElse(
-          (final Object error) => error is RefreshException
+          (error) => error is RefreshException
               ? run(commandLineArguments)
               : TaskEither<Object, void>.left(error),
         );
 
 TaskEither<Object, String> selectCommitMessage(
-  final Iterable<String> commitMessages,
+  Iterable<String> commitMessages,
 ) =>
     TaskEither<Object, String>.tryCatch(
       () async {
         logger.i(
-          '\nChoose commit message and commit (<ENTER> to exit, <r> to reload): ',
+          '\nChoose commit message and commit'
+          ' (<ENTER> to exit, <r> to reload): ',
         );
-        final String line =
-            optionOf(stdin.readLineSync()).getOrElse(() => exit(1));
+        final line = optionOf(stdin.readLineSync()).getOrElse(() => exit(1));
         if (line.isEmpty) {
           exit(0);
         } else if (line == 'r') {
@@ -252,24 +249,24 @@ TaskEither<Object, String> selectCommitMessage(
           return commitMessages.elementAt(int.parse(line));
         }
       },
-      (final Object error, final _) => error,
+      (error, _) => error,
     );
 
 @freezed
 class Arguments with _$Arguments {
   const factory Arguments({
-    required final bool commitAtEnd,
-    required final bool disclaimer,
-    required final bool includeGeneratedCode,
-    required final int numMessages,
-    required final String openAiApiKey,
-    required final bool signOff,
+    required bool commitAtEnd,
+    required bool disclaimer,
+    required bool includeGeneratedCode,
+    required int numMessages,
+    required String openAiApiKey,
+    required bool signOff,
   }) = _Arguments;
 }
 
 class MyPrinter extends LogPrinter {
   @override
-  List<String> log(final LogEvent event) => <String>[
+  List<String> log(LogEvent event) => <String>[
         '${event.message}${event.error != null ? ': ${event.error}' : ''}',
       ];
 }
