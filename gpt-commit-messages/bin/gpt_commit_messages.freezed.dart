@@ -21,6 +21,7 @@ mixin _$Arguments {
   bool get includeGeneratedCode => throw _privateConstructorUsedError;
   int get numMessages => throw _privateConstructorUsedError;
   String get openAiApiKey => throw _privateConstructorUsedError;
+  bool get push => throw _privateConstructorUsedError;
   bool get signOff => throw _privateConstructorUsedError;
 
   @JsonKey(ignore: true)
@@ -39,6 +40,7 @@ abstract class $ArgumentsCopyWith<$Res> {
       bool includeGeneratedCode,
       int numMessages,
       String openAiApiKey,
+      bool push,
       bool signOff});
 }
 
@@ -60,6 +62,7 @@ class _$ArgumentsCopyWithImpl<$Res, $Val extends Arguments>
     Object? includeGeneratedCode = null,
     Object? numMessages = null,
     Object? openAiApiKey = null,
+    Object? push = null,
     Object? signOff = null,
   }) {
     return _then(_value.copyWith(
@@ -83,6 +86,10 @@ class _$ArgumentsCopyWithImpl<$Res, $Val extends Arguments>
           ? _value.openAiApiKey
           : openAiApiKey // ignore: cast_nullable_to_non_nullable
               as String,
+      push: null == push
+          ? _value.push
+          : push // ignore: cast_nullable_to_non_nullable
+              as bool,
       signOff: null == signOff
           ? _value.signOff
           : signOff // ignore: cast_nullable_to_non_nullable
@@ -104,6 +111,7 @@ abstract class _$$_ArgumentsCopyWith<$Res> implements $ArgumentsCopyWith<$Res> {
       bool includeGeneratedCode,
       int numMessages,
       String openAiApiKey,
+      bool push,
       bool signOff});
 }
 
@@ -123,6 +131,7 @@ class __$$_ArgumentsCopyWithImpl<$Res>
     Object? includeGeneratedCode = null,
     Object? numMessages = null,
     Object? openAiApiKey = null,
+    Object? push = null,
     Object? signOff = null,
   }) {
     return _then(_$_Arguments(
@@ -146,6 +155,10 @@ class __$$_ArgumentsCopyWithImpl<$Res>
           ? _value.openAiApiKey
           : openAiApiKey // ignore: cast_nullable_to_non_nullable
               as String,
+      push: null == push
+          ? _value.push
+          : push // ignore: cast_nullable_to_non_nullable
+              as bool,
       signOff: null == signOff
           ? _value.signOff
           : signOff // ignore: cast_nullable_to_non_nullable
@@ -163,6 +176,7 @@ class _$_Arguments implements _Arguments {
       required this.includeGeneratedCode,
       required this.numMessages,
       required this.openAiApiKey,
+      required this.push,
       required this.signOff});
 
   @override
@@ -176,11 +190,13 @@ class _$_Arguments implements _Arguments {
   @override
   final String openAiApiKey;
   @override
+  final bool push;
+  @override
   final bool signOff;
 
   @override
   String toString() {
-    return 'Arguments(commitAtEnd: $commitAtEnd, disclaimer: $disclaimer, includeGeneratedCode: $includeGeneratedCode, numMessages: $numMessages, openAiApiKey: $openAiApiKey, signOff: $signOff)';
+    return 'Arguments(commitAtEnd: $commitAtEnd, disclaimer: $disclaimer, includeGeneratedCode: $includeGeneratedCode, numMessages: $numMessages, openAiApiKey: $openAiApiKey, push: $push, signOff: $signOff)';
   }
 
   @override
@@ -198,12 +214,13 @@ class _$_Arguments implements _Arguments {
                 other.numMessages == numMessages) &&
             (identical(other.openAiApiKey, openAiApiKey) ||
                 other.openAiApiKey == openAiApiKey) &&
+            (identical(other.push, push) || other.push == push) &&
             (identical(other.signOff, signOff) || other.signOff == signOff));
   }
 
   @override
   int get hashCode => Object.hash(runtimeType, commitAtEnd, disclaimer,
-      includeGeneratedCode, numMessages, openAiApiKey, signOff);
+      includeGeneratedCode, numMessages, openAiApiKey, push, signOff);
 
   @JsonKey(ignore: true)
   @override
@@ -219,6 +236,7 @@ abstract class _Arguments implements Arguments {
       required final bool includeGeneratedCode,
       required final int numMessages,
       required final String openAiApiKey,
+      required final bool push,
       required final bool signOff}) = _$_Arguments;
 
   @override
@@ -231,6 +249,8 @@ abstract class _Arguments implements Arguments {
   int get numMessages;
   @override
   String get openAiApiKey;
+  @override
+  bool get push;
   @override
   bool get signOff;
   @override

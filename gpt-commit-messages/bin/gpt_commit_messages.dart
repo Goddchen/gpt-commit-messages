@@ -23,6 +23,7 @@ const String optionDisplaimer = 'disclaimer';
 const String optionGeneratedCode = 'generated-code';
 const String optionNumMessages = 'num-messages';
 const String optionOpenAiApiKey = 'openai-api-key';
+const String optionPush = 'push';
 const String optionSignOffCommit = 'sign-off';
 
 final ArgParser argParser = ArgParser()
@@ -57,6 +58,11 @@ final ArgParser argParser = ArgParser()
     help: 'Get yours at https://platform.openai.com/account/api-keys',
   )
   ..addFlag(
+    optionPush,
+    abbr: 'p',
+    help: 'Push the newly added commit',
+  )
+  ..addFlag(
     optionSignOffCommit,
     abbr: 's',
     help: 'Sign-off commits',
@@ -86,6 +92,7 @@ TaskEither<Object, void> commit(
             'Error committing',
             result.stdout,
           );
+          throw Exception('Error committing: $result');
         }
       },
       (error, _) => error,
@@ -181,6 +188,7 @@ TaskEither<Object, void> parseArguments(
           includeGeneratedCode: args[optionGeneratedCode] as bool,
           numMessages: int.parse(args[optionNumMessages] as String),
           openAiApiKey: args[optionOpenAiApiKey] as String,
+          push: args[optionPush] as bool,
           signOff: args[optionSignOffCommit] as bool,
         );
         OpenAI.apiKey = arguments.openAiApiKey;
@@ -211,6 +219,20 @@ TaskEither<Object, void> printCommitMessages(
       (error, _) => error,
     );
 
+TaskEither<Object, void> push() => TaskEither<Object, void>.tryCatch(
+      () async {
+        final result = await Process.run('git', <String>['push']);
+        if (result.exitCode != 0) {
+          logger.e(
+            'Error pushing',
+            result.stdout,
+          );
+          throw Exception('Error pushing: $result');
+        }
+      },
+      (error, _) => error,
+    );
+
 TaskEither<Object, void> run(Iterable<String> commandLineArguments) =>
     parseArguments(commandLineArguments)
         .andThen(ensureGit)
@@ -224,6 +246,9 @@ TaskEither<Object, void> run(Iterable<String> commandLineArguments) =>
                   () async {},
                   (error, __) => error,
                 ),
+        )
+        .flatMap(
+          (_) => arguments.push ? push() : Task(() async {}).toTaskEither(),
         )
         .orElse(
           (error) => error is RefreshException
@@ -260,6 +285,7 @@ class Arguments with _$Arguments {
     required bool includeGeneratedCode,
     required int numMessages,
     required String openAiApiKey,
+    required bool push,
     required bool signOff,
   }) = _Arguments;
 }
