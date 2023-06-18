@@ -1,3 +1,8 @@
+## 0.4.0
+
+- Add flag (`-p`) to push the newly added commit
+- Improved error handling
+
 ## 0.3.1
 
 - Improve request error logging

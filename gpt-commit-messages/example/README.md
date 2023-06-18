@@ -12,5 +12,6 @@ Options:
 -n, --num-messages                  Number of message suggestions to get from OpenAI
                                     (defaults to "3")
 -a, --openai-api-key (mandatory)    Get yours at https://platform.openai.com/account/api-keys
+-p, --[no-]push                     Push the newly added commit
 -s, --[no-]sign-off                 Sign-off commits
 ```
